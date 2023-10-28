@@ -1,21 +1,33 @@
 from hummingbot.core.data_type.common import OrderType, PositionMode
 from hummingbot.core.data_type.in_flight_order import OrderState
 
-EXCHANGE_NAME = "bybit_perpetual"
+EXCHANGE_NAME = "kraken_perpetual"
 
-DEFAULT_DOMAIN = "bybit_perpetual_main"
+DEFAULT_DOMAIN = "kraken_perpetual_main"
 
 DEFAULT_TIME_IN_FORCE = "GoodTillCancel"
 
-REST_URLS = {"bybit_perpetual_main": "https://api.bybit.com/",
-             "bybit_perpetual_testnet": "https://api-testnet.bybit.com/"}
-WSS_NON_LINEAR_PUBLIC_URLS = {"bybit_perpetual_main": "wss://stream.bybit.com/realtime",
-                              "bybit_perpetual_testnet": "wss://stream-testnet.bybit.com/realtime"}
+REST_URLS = {
+    "kraken_perpetual_main": "https://futures.kraken.com/derivatives/api/v3/",
+    "kraken_perpetual_testnet": "https://demo-futures.kraken.com/derivatives/api/v3/",
+}
+
+REST_LINEAR_URLS = {
+    "kraken_perpetual_main": "https://api.futures.kraken.com/",
+    "kraken_perpetual_testnet": "https://api.demo-futures.kraken.com/",
+}
+
+WSS_NON_LINEAR_PUBLIC_URLS = {
+    "kraken_perpetual_main": "wss://futures.kraken.com/ws/v1/",
+    "kraken_perpetual_testnet": "wss://demo-futures.kraken.com/ws/v1/",
+}
 WSS_NON_LINEAR_PRIVATE_URLS = WSS_NON_LINEAR_PUBLIC_URLS
-WSS_LINEAR_PUBLIC_URLS = {"bybit_perpetual_main": "wss://stream.bybit.com/realtime_public",
-                          "bybit_perpetual_testnet": "wss://stream-testnet.bybit.com/realtime_public"}
-WSS_LINEAR_PRIVATE_URLS = {"bybit_perpetual_main": "wss://stream.bybit.com/realtime_private",
-                           "bybit_perpetual_testnet": "wss://stream-testnet.bybit.com/realtime_private"}
+
+WSS_LINEAR_PUBLIC_URLS = {
+    "kraken_perpetual_main": "wss://api.futures.kraken.com",
+    "kraken_perpetual_testnet": "wss://api.demo-futures.kraken.com",
+}
+WSS_LINEAR_PRIVATE_URLS = WSS_LINEAR_PUBLIC_URLS
 
 REST_API_VERSION = "v2"
 
@@ -45,52 +57,63 @@ NON_LINEAR_MARKET = "non_linear"
 
 LATEST_SYMBOL_INFORMATION_ENDPOINT = {
     LINEAR_MARKET: f"{REST_API_VERSION}/public/tickers",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/tickers"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/tickers",
+}
 QUERY_SYMBOL_ENDPOINT = {
     LINEAR_MARKET: f"{REST_API_VERSION}/public/symbols",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/symbols"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/symbols",
+}
 ORDER_BOOK_ENDPOINT = {
     LINEAR_MARKET: f"{REST_API_VERSION}/public/orderBook/L2",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/orderBook/L2"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/orderBook/L2",
+}
 SERVER_TIME_PATH_URL = {
     LINEAR_MARKET: f"{REST_API_VERSION}/public/time",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/time"
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/time",
 }
 
 # REST API Private Endpoints
 SET_LEVERAGE_PATH_URL = {
     LINEAR_MARKET: "private/linear/position/set-leverage",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/position/leverage/save"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/position/leverage/save",
+}
 GET_LAST_FUNDING_RATE_PATH_URL = {
     LINEAR_MARKET: "private/linear/funding/prev-funding",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/funding/prev-funding"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/funding/prev-funding",
+}
 GET_PREDICTED_FUNDING_RATE_PATH_URL = {
     LINEAR_MARKET: "/private/linear/funding/predicted-funding",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/funding/predicted-funding"
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/funding/predicted-funding",
 }
 GET_POSITIONS_PATH_URL = {
     LINEAR_MARKET: "private/linear/position/list",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/position/list"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/position/list",
+}
 PLACE_ACTIVE_ORDER_PATH_URL = {
     LINEAR_MARKET: "private/linear/order/create",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order/create"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order/create",
+}
 CANCEL_ACTIVE_ORDER_PATH_URL = {
     LINEAR_MARKET: "private/linear/order/cancel",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order/cancel"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order/cancel",
+}
 CANCEL_ALL_ACTIVE_ORDERS_PATH_URL = {
     LINEAR_MARKET: "private/linear/order/cancelAll",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order/cancelAll"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order/cancelAll",
+}
 QUERY_ACTIVE_ORDER_PATH_URL = {
     LINEAR_MARKET: "private/linear/order/search",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/order",
+}
 USER_TRADE_RECORDS_PATH_URL = {
     LINEAR_MARKET: "private/linear/trade/execution/list",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/execution/list"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/execution/list",
+}
 GET_WALLET_BALANCE_PATH_URL = {
     LINEAR_MARKET: f"{REST_API_VERSION}/private/wallet/balance",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/wallet/balance"}
-SET_POSITION_MODE_URL = {
-    LINEAR_MARKET: "private/linear/position/switch-mode"}
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/wallet/balance",
+}
+SET_POSITION_MODE_URL = {LINEAR_MARKET: "private/linear/position/switch-mode"}
 
 # Funding Settlement Time Span
 FUNDING_SETTLEMENT_DURATION = (5, 5)  # seconds before snapshot, seconds after snapshot

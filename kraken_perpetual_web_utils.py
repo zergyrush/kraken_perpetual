@@ -1,7 +1,11 @@
 from typing import Any, Callable, Dict, List, Optional
 
-from hummingbot.connector.derivative.bybit_perpetual import bybit_perpetual_constants as CONSTANTS
-from hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_utils import is_linear_perpetual
+from hummingbot.connector.derivative.kraken_perpetual import (
+    kraken_perpetual_constants as CONSTANTS,
+)
+from hummingbot.connector.derivative.kraken_perpetual.kraken_perpetual_utils import (
+    is_linear_perpetual,
+)
 from hummingbot.connector.time_synchronizer import TimeSynchronizer
 from hummingbot.connector.utils import TimeSynchronizerRESTPreProcessor
 from hummingbot.core.api_throttler.async_throttler import AsyncThrottler
@@ -20,19 +24,23 @@ class HeadersContentRESTPreProcessor(RESTPreProcessorBase):
 
 
 def build_api_factory(
-        throttler: Optional[AsyncThrottler] = None,
-        time_synchronizer: Optional[TimeSynchronizer] = None,
-        time_provider: Optional[Callable] = None,
-        auth: Optional[AuthBase] = None,
+    throttler: Optional[AsyncThrottler] = None,
+    time_synchronizer: Optional[TimeSynchronizer] = None,
+    time_provider: Optional[Callable] = None,
+    auth: Optional[AuthBase] = None,
 ) -> WebAssistantsFactory:
     throttler = throttler or create_throttler()
     time_synchronizer = time_synchronizer or TimeSynchronizer()
-    time_provider = time_provider or (lambda: get_current_server_time(throttler=throttler))
+    time_provider = time_provider or (
+        lambda: get_current_server_time(throttler=throttler)
+    )
     api_factory = WebAssistantsFactory(
         throttler=throttler,
         auth=auth,
         rest_pre_processors=[
-            TimeSynchronizerRESTPreProcessor(synchronizer=time_synchronizer, time_provider=time_provider),
+            TimeSynchronizerRESTPreProcessor(
+                synchronizer=time_synchronizer, time_provider=time_provider
+            ),
             HeadersContentRESTPreProcessor(),
         ],
     )
@@ -48,7 +56,9 @@ async def get_current_server_time(
     throttler: Optional[AsyncThrottler] = None, domain: str = CONSTANTS.DEFAULT_DOMAIN
 ) -> float:
     throttler = throttler or create_throttler()
-    api_factory = build_api_factory_without_time_synchronizer_pre_processor(throttler=throttler)
+    api_factory = build_api_factory_without_time_synchronizer_pre_processor(
+        throttler=throttler
+    )
     rest_assistant = await api_factory.get_rest_assistant()
     endpoint = CONSTANTS.SERVER_TIME_PATH_URL
     url = get_rest_url_for_endpoint(endpoint=endpoint, domain=domain)
@@ -82,13 +92,17 @@ def payload_from_message(message: Dict[str, Any]) -> List[Dict[str, Any]]:
     return payload
 
 
-def build_api_factory_without_time_synchronizer_pre_processor(throttler: AsyncThrottler) -> WebAssistantsFactory:
+def build_api_factory_without_time_synchronizer_pre_processor(
+    throttler: AsyncThrottler,
+) -> WebAssistantsFactory:
     api_factory = WebAssistantsFactory(throttler=throttler)
     return api_factory
 
 
 def get_rest_url_for_endpoint(
-    endpoint: Dict[str, str], trading_pair: Optional[str] = None, domain: str = CONSTANTS.DEFAULT_DOMAIN
+    endpoint: Dict[str, str],
+    trading_pair: Optional[str] = None,
+    domain: str = CONSTANTS.DEFAULT_DOMAIN,
 ):
     market = _get_rest_api_market_for_endpoint(trading_pair)
     variant = domain if domain else CONSTANTS.DEFAULT_DOMAIN
@@ -100,7 +114,9 @@ def get_pair_specific_limit_id(base_limit_id: str, trading_pair: str) -> str:
     return limit_id
 
 
-def get_rest_api_limit_id_for_endpoint(endpoint: Dict[str, str], trading_pair: Optional[str] = None) -> str:
+def get_rest_api_limit_id_for_endpoint(
+    endpoint: Dict[str, str], trading_pair: Optional[str] = None
+) -> str:
     market = _get_rest_api_market_for_endpoint(trading_pair)
     limit_id = endpoint[market]
     if trading_pair is not None:
@@ -109,7 +125,9 @@ def get_rest_api_limit_id_for_endpoint(endpoint: Dict[str, str], trading_pair: O
 
 
 def _wss_url(endpoint: Dict[str, str], connector_variant_label: Optional[str]) -> str:
-    variant = connector_variant_label if connector_variant_label else CONSTANTS.DEFAULT_DOMAIN
+    variant = (
+        connector_variant_label if connector_variant_label else CONSTANTS.DEFAULT_DOMAIN
+    )
     return endpoint.get(variant)
 
 
@@ -146,15 +164,23 @@ def _build_private_general_rate_limits() -> List[RateLimit]:
             limit_id=CONSTANTS.GET_WALLET_BALANCE_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_B_LIMIT_ID)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_B_LIMIT_ID
+                ),
+            ],
         ),
         RateLimit(  # same for linear and non-linear
             limit_id=CONSTANTS.SET_POSITION_MODE_URL[CONSTANTS.LINEAR_MARKET],
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_B_LIMIT_ID)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_B_LIMIT_ID
+                ),
+            ],
         ),
     ]
     return rate_limits
@@ -162,8 +188,12 @@ def _build_private_general_rate_limits() -> List[RateLimit]:
 
 def _build_global_rate_limits() -> List[RateLimit]:
     rate_limits = [
-        RateLimit(limit_id=CONSTANTS.GET_LIMIT_ID, limit=CONSTANTS.GET_RATE, time_interval=1),
-        RateLimit(limit_id=CONSTANTS.POST_LIMIT_ID, limit=CONSTANTS.POST_RATE, time_interval=1),
+        RateLimit(
+            limit_id=CONSTANTS.GET_LIMIT_ID, limit=CONSTANTS.GET_RATE, time_interval=1
+        ),
+        RateLimit(
+            limit_id=CONSTANTS.POST_LIMIT_ID, limit=CONSTANTS.POST_RATE, time_interval=1
+        ),
     ]
     return rate_limits
 
@@ -171,7 +201,9 @@ def _build_global_rate_limits() -> List[RateLimit]:
 def _build_public_rate_limits():
     public_rate_limits = [
         RateLimit(  # same for linear and non-linear
-            limit_id=CONSTANTS.LATEST_SYMBOL_INFORMATION_ENDPOINT[CONSTANTS.NON_LINEAR_MARKET],
+            limit_id=CONSTANTS.LATEST_SYMBOL_INFORMATION_ENDPOINT[
+                CONSTANTS.NON_LINEAR_MARKET
+            ],
             limit=CONSTANTS.GET_RATE,
             time_interval=1,
             linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID)],
@@ -193,7 +225,7 @@ def _build_public_rate_limits():
             limit=CONSTANTS.GET_RATE,
             time_interval=1,
             linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID)],
-        )
+        ),
     ]
     return public_rate_limits
 
@@ -207,15 +239,21 @@ def _build_private_rate_limits(trading_pairs: List[str]) -> List[RateLimit]:
     return rate_limits
 
 
-def _build_private_pair_specific_rate_limits(trading_pairs: List[str]) -> List[RateLimit]:
+def _build_private_pair_specific_rate_limits(
+    trading_pairs: List[str],
+) -> List[RateLimit]:
     rate_limits = []
 
     for trading_pair in trading_pairs:
         market = _get_rest_api_market_for_endpoint(trading_pair)
         if market == CONSTANTS.NON_LINEAR_MARKET:
-            rate_limits.extend(_build_private_pair_specific_non_linear_rate_limits(trading_pair))
+            rate_limits.extend(
+                _build_private_pair_specific_non_linear_rate_limits(trading_pair)
+            )
         else:
-            rate_limits.extend(_build_private_pair_specific_linear_rate_limits(trading_pair))
+            rate_limits.extend(
+                _build_private_pair_specific_linear_rate_limits(trading_pair)
+            )
 
     return rate_limits
 
@@ -230,100 +268,173 @@ def _get_rest_api_market_for_endpoint(trading_pair: Optional[str] = None) -> str
     return market
 
 
-def _build_private_pair_specific_non_linear_rate_limits(trading_pair: str) -> List[RateLimit]:
+def _build_private_pair_specific_non_linear_rate_limits(
+    trading_pair: str,
+) -> List[RateLimit]:
     pair_specific_non_linear_private_bucket_100_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_100_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_100_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_non_linear_private_bucket_600_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_600_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_600_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_non_linear_private_bucket_75_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_75_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_75_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_non_linear_private_bucket_120_b_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_B_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_B_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_non_linear_private_bucket_120_c_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_C_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.NON_LINEAR_PRIVATE_BUCKET_120_C_LIMIT_ID,
+        trading_pair=trading_pair,
     )
 
     rate_limits = [
-        RateLimit(limit_id=pair_specific_non_linear_private_bucket_100_limit_id, limit=100, time_interval=60),
-        RateLimit(limit_id=pair_specific_non_linear_private_bucket_600_limit_id, limit=600, time_interval=60),
-        RateLimit(limit_id=pair_specific_non_linear_private_bucket_75_limit_id, limit=75, time_interval=60),
-        RateLimit(limit_id=pair_specific_non_linear_private_bucket_120_b_limit_id, limit=120, time_interval=60),
-        RateLimit(limit_id=pair_specific_non_linear_private_bucket_120_c_limit_id, limit=120, time_interval=60),
+        RateLimit(
+            limit_id=pair_specific_non_linear_private_bucket_100_limit_id,
+            limit=100,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_non_linear_private_bucket_600_limit_id,
+            limit=600,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_non_linear_private_bucket_75_limit_id,
+            limit=75,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_non_linear_private_bucket_120_b_limit_id,
+            limit=120,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_non_linear_private_bucket_120_c_limit_id,
+            limit=120,
+            time_interval=60,
+        ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.SET_LEVERAGE_PATH_URL[CONSTANTS.NON_LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.SET_LEVERAGE_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
+                trading_pair=trading_pair,
             ),
             limit=75,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_75_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_75_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.GET_LAST_FUNDING_RATE_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
+                base_limit_id=CONSTANTS.GET_LAST_FUNDING_RATE_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_120_c_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_120_c_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.GET_PREDICTED_FUNDING_RATE_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
+                base_limit_id=CONSTANTS.GET_PREDICTED_FUNDING_RATE_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_120_c_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_120_c_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.GET_POSITIONS_PATH_URL[CONSTANTS.NON_LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.GET_POSITIONS_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
+                trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_120_b_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_120_b_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.PLACE_ACTIVE_ORDER_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
+                base_limit_id=CONSTANTS.PLACE_ACTIVE_ORDER_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=100,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_100_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_100_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.CANCEL_ACTIVE_ORDER_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
+                base_limit_id=CONSTANTS.CANCEL_ACTIVE_ORDER_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=100,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_100_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_100_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.QUERY_ACTIVE_ORDER_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
+                base_limit_id=CONSTANTS.QUERY_ACTIVE_ORDER_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=600,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_non_linear_private_bucket_600_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_non_linear_private_bucket_600_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.USER_TRADE_RECORDS_PATH_URL[CONSTANTS.NON_LINEAR_MARKET],
+                base_limit_id=CONSTANTS.USER_TRADE_RECORDS_PATH_URL[
+                    CONSTANTS.NON_LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=120,
@@ -335,98 +446,162 @@ def _build_private_pair_specific_non_linear_rate_limits(trading_pair: str) -> Li
     return rate_limits
 
 
-def _build_private_pair_specific_linear_rate_limits(trading_pair: str) -> List[RateLimit]:
+def _build_private_pair_specific_linear_rate_limits(
+    trading_pair: str,
+) -> List[RateLimit]:
     pair_specific_linear_private_bucket_100_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_100_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_100_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_linear_private_bucket_600_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_600_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_600_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_linear_private_bucket_75_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_75_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_75_LIMIT_ID,
+        trading_pair=trading_pair,
     )
     pair_specific_linear_private_bucket_120_a_limit_id = get_pair_specific_limit_id(
-        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_120_A_LIMIT_ID, trading_pair=trading_pair
+        base_limit_id=CONSTANTS.LINEAR_PRIVATE_BUCKET_120_A_LIMIT_ID,
+        trading_pair=trading_pair,
     )
 
     rate_limits = [
-        RateLimit(limit_id=pair_specific_linear_private_bucket_100_limit_id, limit=100, time_interval=60),
-        RateLimit(limit_id=pair_specific_linear_private_bucket_600_limit_id, limit=600, time_interval=60),
-        RateLimit(limit_id=pair_specific_linear_private_bucket_75_limit_id, limit=75, time_interval=60),
-        RateLimit(limit_id=pair_specific_linear_private_bucket_120_a_limit_id, limit=120, time_interval=60),
+        RateLimit(
+            limit_id=pair_specific_linear_private_bucket_100_limit_id,
+            limit=100,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_linear_private_bucket_600_limit_id,
+            limit=600,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_linear_private_bucket_75_limit_id,
+            limit=75,
+            time_interval=60,
+        ),
+        RateLimit(
+            limit_id=pair_specific_linear_private_bucket_120_a_limit_id,
+            limit=120,
+            time_interval=60,
+        ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.SET_LEVERAGE_PATH_URL[CONSTANTS.LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.SET_LEVERAGE_PATH_URL[CONSTANTS.LINEAR_MARKET],
+                trading_pair=trading_pair,
             ),
             limit=75,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_75_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
+                LinkedLimitWeightPair(pair_specific_linear_private_bucket_75_limit_id),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.GET_LAST_FUNDING_RATE_PATH_URL[CONSTANTS.LINEAR_MARKET],
+                base_limit_id=CONSTANTS.GET_LAST_FUNDING_RATE_PATH_URL[
+                    CONSTANTS.LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_120_a_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_linear_private_bucket_120_a_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.GET_PREDICTED_FUNDING_RATE_PATH_URL[CONSTANTS.LINEAR_MARKET],
+                base_limit_id=CONSTANTS.GET_PREDICTED_FUNDING_RATE_PATH_URL[
+                    CONSTANTS.LINEAR_MARKET
+                ],
                 trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_120_a_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_linear_private_bucket_120_a_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.GET_POSITIONS_PATH_URL[CONSTANTS.LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.GET_POSITIONS_PATH_URL[CONSTANTS.LINEAR_MARKET],
+                trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_120_a_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_linear_private_bucket_120_a_limit_id
+                ),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.PLACE_ACTIVE_ORDER_PATH_URL[CONSTANTS.LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.PLACE_ACTIVE_ORDER_PATH_URL[
+                    CONSTANTS.LINEAR_MARKET
+                ],
+                trading_pair=trading_pair,
             ),
             limit=100,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_100_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
+                LinkedLimitWeightPair(pair_specific_linear_private_bucket_100_limit_id),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.CANCEL_ACTIVE_ORDER_PATH_URL[CONSTANTS.LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.CANCEL_ACTIVE_ORDER_PATH_URL[
+                    CONSTANTS.LINEAR_MARKET
+                ],
+                trading_pair=trading_pair,
             ),
             limit=100,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_100_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.POST_LIMIT_ID),
+                LinkedLimitWeightPair(pair_specific_linear_private_bucket_100_limit_id),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.QUERY_ACTIVE_ORDER_PATH_URL[CONSTANTS.LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.QUERY_ACTIVE_ORDER_PATH_URL[
+                    CONSTANTS.LINEAR_MARKET
+                ],
+                trading_pair=trading_pair,
             ),
             limit=600,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_600_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(pair_specific_linear_private_bucket_600_limit_id),
+            ],
         ),
         RateLimit(
             limit_id=get_pair_specific_limit_id(
-                base_limit_id=CONSTANTS.USER_TRADE_RECORDS_PATH_URL[CONSTANTS.LINEAR_MARKET], trading_pair=trading_pair
+                base_limit_id=CONSTANTS.USER_TRADE_RECORDS_PATH_URL[
+                    CONSTANTS.LINEAR_MARKET
+                ],
+                trading_pair=trading_pair,
             ),
             limit=120,
             time_interval=60,
-            linked_limits=[LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
-                           LinkedLimitWeightPair(pair_specific_linear_private_bucket_120_a_limit_id)],
+            linked_limits=[
+                LinkedLimitWeightPair(CONSTANTS.GET_LIMIT_ID),
+                LinkedLimitWeightPair(
+                    pair_specific_linear_private_bucket_120_a_limit_id
+                ),
+            ],
         ),
     ]
 
