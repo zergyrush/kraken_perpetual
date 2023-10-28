@@ -74,7 +74,7 @@ class KrakenPerpetualAPIOrderBookDataSource(PerpetualAPIOrderBookDataSource):
             (
                 linear_trading_pairs,
                 non_linear_trading_pairs,
-            ) = bybit_perpetual_utils.get_linear_non_linear_split(self._trading_pairs)
+            ) = kraken_perpetual_utils.get_linear_non_linear_split(self._trading_pairs)
 
             tasks = []
             if linear_trading_pairs:
