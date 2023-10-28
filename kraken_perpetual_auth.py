@@ -36,28 +36,17 @@ class KrakenPerpetualAuth(AuthBase):
 
     async def rest_authenticate(self, request: RESTRequest) -> RESTRequest:
         if request.method == RESTMethod.GET:
-            request = await self._authenticate_get(request)
+            params = request.params or {}
         elif request.method == RESTMethod.POST:
-            request = await self._authenticate_post(request)
+            params = json.loads(request.data) if request.data is not None else {}
         else:
             raise NotImplementedError
-        return request
 
-    async def _authenticate_get(self, request: RESTRequest) -> RESTRequest:
-        params = request.params or {}
         request.headers = self._create_auth_header(
             request.endpoint_url,
             dict(params),
         )
-        return request
 
-    async def _authenticate_post(self, request: RESTRequest) -> RESTRequest:
-        params = json.loads(request.data) if request.data is not None else {}
-        request.headers = self._create_auth_header(
-            request.endpoint_url,
-            dict(params),
-        )
-        data = {key: value for key, value in sorted(params.items())}
         return request
 
     async def ws_authenticate(self, request: WSRequest) -> WSRequest:
