@@ -3,11 +3,9 @@ import hmac
 import json
 import time
 import base64
+from urllib.parse import urlencode
 from decimal import Decimal
 from typing import (
-    Optional,
-    Any,
-    Dict,
     List,
     Mapping,
 )
@@ -47,20 +45,19 @@ class KrakenPerpetualAuth(AuthBase):
 
     async def _authenticate_get(self, request: RESTRequest) -> RESTRequest:
         params = request.params or {}
-        request.params = self._create_auth_header(
+        request.headers = self._create_auth_header(
             request.endpoint_url,
             dict(params),
         )
         return request
 
     async def _authenticate_post(self, request: RESTRequest) -> RESTRequest:
-        data = json.loads(request.data) if request.data is not None else {}
-        data = self._create_auth_header(
+        params = json.loads(request.data) if request.data is not None else {}
+        request.headers = self._create_auth_header(
             request.endpoint_url,
-            data,
+            dict(params),
         )
-        data = {key: value for key, value in sorted(data.items())}
-        request.data = json.dumps(data)
+        data = {key: value for key, value in sorted(params.items())}
         return request
 
     async def ws_authenticate(self, request: WSRequest) -> WSRequest:
@@ -93,7 +90,11 @@ class KrakenPerpetualAuth(AuthBase):
         endpoint_url,
         params: Mapping[str, str],
     ) -> Mapping[str, str]:
-        postData = ""
+        """
+        Generate Authent HEADERS for Kraken rest api requests
+        :return: a dictionary of authentication info including the request signature
+        """
+        postData = urlencode(params)
         nonce = self._get_nonce() if self.useNonce else ""
         signature = self._sign_message(
             endpoint_url,
