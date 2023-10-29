@@ -59,21 +59,21 @@ def get_next_funding_timestamp(current_timestamp: float) -> float:
     return float(int_ts - mod + eight_hours)
 
 
-class BybitPerpetualConfigMap(BaseConnectorConfigMap):
-    connector: str = Field(default="bybit_perpetual", client_data=None)
-    bybit_perpetual_api_key: SecretStr = Field(
+class KrakenPerpetualConfigMap(BaseConnectorConfigMap):
+    connector: str = Field(default="kraken_perpetual", client_data=None)
+    kraken_perpetual_api_key: SecretStr = Field(
         default=...,
         client_data=ClientFieldData(
-            prompt=lambda cm: "Enter your Bybit Perpetual API key",
+            prompt=lambda cm: "Enter your Kraken Perpetual API key",
             is_secure=True,
             is_connect_key=True,
             prompt_on_new=True,
         )
     )
-    bybit_perpetual_secret_key: SecretStr = Field(
+    kraken_perpetual_secret_key: SecretStr = Field(
         default=...,
         client_data=ClientFieldData(
-            prompt=lambda cm: "Enter your Bybit Perpetual secret key",
+            prompt=lambda cm: "Enter your Kraken Perpetual secret key",
             is_secure=True,
             is_connect_key=True,
             prompt_on_new=True,
@@ -81,37 +81,37 @@ class BybitPerpetualConfigMap(BaseConnectorConfigMap):
     )
 
     class Config:
-        title = "bybit_perpetual"
+        title = "kraken_perpetual"
 
 
-KEYS = BybitPerpetualConfigMap.construct()
+KEYS = KrakenPerpetualConfigMap.construct()
 
-OTHER_DOMAINS = ["bybit_perpetual_testnet"]
-OTHER_DOMAINS_PARAMETER = {"bybit_perpetual_testnet": "bybit_perpetual_testnet"}
-OTHER_DOMAINS_EXAMPLE_PAIR = {"bybit_perpetual_testnet": "BTC-USDT"}
+OTHER_DOMAINS = ["kraken_perpetual_testnet"]
+OTHER_DOMAINS_PARAMETER = {"kraken_perpetual_testnet": "kraken_perpetual_testnet"}
+OTHER_DOMAINS_EXAMPLE_PAIR = {"kraken_perpetual_testnet": "BTC-USDT"}
 OTHER_DOMAINS_DEFAULT_FEES = {
-    "bybit_perpetual_testnet": TradeFeeSchema(
+    "kraken_perpetual_testnet": TradeFeeSchema(
         maker_percent_fee_decimal=Decimal("-0.00025"),
         taker_percent_fee_decimal=Decimal("0.00075"),
     )
 }
 
 
-class BybitPerpetualTestnetConfigMap(BaseConnectorConfigMap):
-    connector: str = Field(default="bybit_perpetual_testnet", client_data=None)
-    bybit_perpetual_testnet_api_key: SecretStr = Field(
+class KrakenPerpetualTestnetConfigMap(BaseConnectorConfigMap):
+    connector: str = Field(default="kraken_perpetual_testnet", client_data=None)
+    kraken_perpetual_testnet_api_key: SecretStr = Field(
         default=...,
         client_data=ClientFieldData(
-            prompt=lambda cm: "Enter your Bybit Perpetual Testnet API key",
+            prompt=lambda cm: "Enter your Kraken Perpetual Testnet API key",
             is_secure=True,
             is_connect_key=True,
             prompt_on_new=True,
         )
     )
-    bybit_perpetual_testnet_secret_key: SecretStr = Field(
+    kraken_perpetual_testnet_secret_key: SecretStr = Field(
         default=...,
         client_data=ClientFieldData(
-            prompt=lambda cm: "Enter your Bybit Perpetual Testnet secret key",
+            prompt=lambda cm: "Enter your Kraken Perpetual Testnet secret key",
             is_secure=True,
             is_connect_key=True,
             prompt_on_new=True,
@@ -119,9 +119,9 @@ class BybitPerpetualTestnetConfigMap(BaseConnectorConfigMap):
     )
 
     class Config:
-        title = "bybit_perpetual_testnet"
+        title = "kraken_perpetual_testnet"
 
 
 OTHER_DOMAINS_KEYS = {
-    "bybit_perpetual_testnet": BybitPerpetualTestnetConfigMap.construct()
+    "kraken_perpetual_testnet": KrakenPerpetualTestnetConfigMap.construct()
 }
