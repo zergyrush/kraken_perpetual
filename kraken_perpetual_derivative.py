@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 import pandas as pd
 from bidict import bidict
 
-import hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_constants as CONSTANTS
-import hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_utils as bybit_utils
-from hummingbot.connector.derivative.bybit_perpetual import bybit_perpetual_web_utils as web_utils
-from hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_api_order_book_data_source import (
-    BybitPerpetualAPIOrderBookDataSource,
+import hummingbot.connector.derivative.kraken_perpetual.kraken_perpetual_constants as CONSTANTS
+import hummingbot.connector.derivative.kraken_perpetual.kraken_perpetual_utils as kraken_utils
+from hummingbot.connector.derivative.kraken_perpetual import kraken_perpetual_web_utils as web_utils
+from hummingbot.connector.derivative.kraken_perpetual.kraken_perpetual_api_order_book_data_source import (
+    KrakenPerpetualAPIOrderBookDataSource,
 )
-from hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_auth import BybitPerpetualAuth
-from hummingbot.connector.derivative.bybit_perpetual.bybit_perpetual_user_stream_data_source import (
-    BybitPerpetualUserStreamDataSource,
+from hummingbot.connector.derivative.kraken_perpetual.kraken_perpetual_auth import KrakenPerpetualAuth
+from hummingbot.connector.derivative.kraken_perpetual.kraken_perpetual_user_stream_data_source import (
+    KrakenPerpetualUserStreamDataSource,
 )
 from hummingbot.connector.derivative.position import Position
 from hummingbot.connector.perpetual_derivative_py_base import PerpetualDerivativePyBase
@@ -44,14 +44,14 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
     def __init__(
         self,
         client_config_map: "ClientConfigAdapter",
-        bybit_perpetual_api_key: str = None,
-        bybit_perpetual_secret_key: str = None,
+        kraken_perpetual_api_key: str = None,
+        kraken_perpetual_secret_key: str = None,
         trading_pairs: Optional[List[str]] = None,
         trading_required: bool = True,
         domain: str = CONSTANTS.DEFAULT_DOMAIN,
     ):
-        self.bybit_perpetual_api_key = bybit_perpetual_api_key
-        self.bybit_perpetual_secret_key = bybit_perpetual_secret_key
+        self.kraken_perpetual_api_key = kraken_perpetual_api_key
+        self.kraken_perpetual_secret_key = kraken_perpetual_secret_key
         self._trading_required = trading_required
         self._trading_pairs = trading_pairs
         self._domain = domain
@@ -64,8 +64,8 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
         return CONSTANTS.EXCHANGE_NAME
 
     @property
-    def authenticator(self) -> BybitPerpetualAuth:
-        return BybitPerpetualAuth(self.bybit_perpetual_api_key, self.bybit_perpetual_secret_key)
+    def authenticator(self) -> KrakenPerpetualAuth:
+        return KrakenPerpetualAuth(self.kraken_perpetual_api_key, self.kraken_perpetual_secret_key)
 
     @property
     def rate_limits_rules(self) -> List[RateLimit]:
@@ -118,9 +118,9 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
         return [OrderType.LIMIT, OrderType.MARKET]
 
     def supported_position_modes(self) -> List[PositionMode]:
-        if all(bybit_utils.is_linear_perpetual(tp) for tp in self._trading_pairs):
+        if all(kraken_utils.is_linear_perpetual(tp) for tp in self._trading_pairs):
             return [PositionMode.ONEWAY, PositionMode.HEDGE]
-        elif all(not bybit_utils.is_linear_perpetual(tp) for tp in self._trading_pairs):
+        elif all(not kraken_utils.is_linear_perpetual(tp) for tp in self._trading_pairs):
             # As of ByBit API v2, we only support ONEWAY mode for non-linear perpetuals
             return [PositionMode.ONEWAY]
         else:
@@ -285,7 +285,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
         )
 
     def _create_order_book_data_source(self) -> OrderBookTrackerDataSource:
-        return BybitPerpetualAPIOrderBookDataSource(
+        return KrakenPerpetualAPIOrderBookDataSource(
             self.trading_pairs,
             connector=self,
             api_factory=self._web_assistants_factory,
@@ -293,7 +293,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
         )
 
     def _create_user_stream_data_source(self) -> UserStreamTrackerDataSource:
-        return BybitPerpetualUserStreamDataSource(
+        return KrakenPerpetualUserStreamDataSource(
             auth=self._auth,
             api_factory=self._web_assistants_factory,
             domain=self._domain,
@@ -448,7 +448,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
             amount = Decimal(str(data["size"]))
             leverage = (
                 Decimal(str(data["leverage"]))
-                if bybit_utils.is_linear_perpetual(hb_trading_pair)
+                if kraken_utils.is_linear_perpetual(hb_trading_pair)
                 else Decimal(str(data["effective_leverage"]))
             )
             pos_key = self._perpetual_trading.position_key(hb_trading_pair, position_side)
@@ -471,7 +471,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
         if order.exchange_order_id is not None:
             try:
                 all_fills_response = await self._request_order_fills(order=order)
-                trades_list_key = "data" if bybit_utils.is_linear_perpetual(order.trading_pair) else "trade_list"
+                trades_list_key = "data" if kraken_utils.is_linear_perpetual(order.trading_pair) else "trade_list"
                 fills_data = all_fills_response["result"].get(trades_list_key, [])
 
                 if fills_data is not None:
@@ -705,7 +705,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
                 exchange_symbol = instrument["name"]
                 if exchange_symbol in symbol_map:
                     trading_pair = combine_to_hb_trading_pair(instrument["base_currency"], instrument["quote_currency"])
-                    is_linear = bybit_utils.is_linear_perpetual(trading_pair)
+                    is_linear = kraken_utils.is_linear_perpetual(trading_pair)
                     collateral_token = instrument["quote_currency"] if is_linear else instrument["base_currency"]
                     trading_rules[trading_pair] = TradingRule(
                         trading_pair=trading_pair,
@@ -722,7 +722,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
 
     def _initialize_trading_pair_symbols_from_exchange_info(self, exchange_info: Dict[str, Any]):
         mapping = bidict()
-        for symbol_data in filter(bybit_utils.is_exchange_information_valid, exchange_info["result"]):
+        for symbol_data in filter(kraken_utils.is_exchange_information_valid, exchange_info["result"]):
             exchange_symbol = symbol_data["name"]
             base = symbol_data["base_currency"]
             quote = symbol_data["quote_currency"]
@@ -770,7 +770,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
         success = True
 
         api_mode = CONSTANTS.POSITION_MODE_MAP[mode]
-        is_linear = bybit_utils.is_linear_perpetual(trading_pair)
+        is_linear = kraken_utils.is_linear_perpetual(trading_pair)
 
         if is_linear:
             exchange_symbol = await self.exchange_symbol_associated_to_pair(trading_pair)
@@ -798,7 +798,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
     async def _set_trading_pair_leverage(self, trading_pair: str, leverage: int) -> Tuple[bool, str]:
         exchange_symbol = await self.exchange_symbol_associated_to_pair(trading_pair)
 
-        if bybit_utils.is_linear_perpetual(trading_pair):
+        if kraken_utils.is_linear_perpetual(trading_pair):
             data = {"symbol": exchange_symbol, "buy_leverage": leverage, "sell_leverage": leverage}
         else:
             data = {"symbol": exchange_symbol, "leverage": leverage}
@@ -841,7 +841,7 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
             funding_rate: Decimal = Decimal(str(data["funding_rate"]))
             position_size: Decimal = Decimal(str(data["size"]))
             payment: Decimal = funding_rate * position_size
-            if bybit_utils.is_linear_perpetual(trading_pair):
+            if kraken_utils.is_linear_perpetual(trading_pair):
                 timestamp: int = int(pd.Timestamp(data["exec_time"], tz="UTC").timestamp())
             else:
                 timestamp: int = int(data["exec_timestamp"])
