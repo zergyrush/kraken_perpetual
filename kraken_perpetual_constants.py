@@ -115,8 +115,8 @@ USER_TRADE_RECORDS_PATH_URL = {
     NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/execution/list",
 }
 GET_WALLET_BALANCE_PATH_URL = {
-    LINEAR_MARKET: f"{REST_API_VERSION}/private/wallet/balance",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/private/wallet/balance",
+    LINEAR_MARKET: f"{REST_API_VERSION}/accounts",
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/accounts",
 }
 SET_POSITION_MODE_URL = {LINEAR_MARKET: "private/linear/position/switch-mode"}
 

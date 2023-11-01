@@ -3,7 +3,7 @@ import hmac
 import json
 import time
 import base64
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from decimal import Decimal
 from typing import (
     List,
@@ -42,8 +42,11 @@ class KrakenPerpetualAuth(AuthBase):
         else:
             raise NotImplementedError
 
+        parsed_url = urlparse(request.url)
+        path = parsed_url.path
+
         request.headers = self._create_auth_header(
-            request.endpoint_url,
+            path,
             dict(params),
         )
 
