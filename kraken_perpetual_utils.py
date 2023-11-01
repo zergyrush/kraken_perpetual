@@ -26,8 +26,8 @@ def is_exchange_information_valid(exchange_info: Dict[str, Any]) -> bool:
 
     :return: True if the trading pair is enabled, False otherwise
     """
-    status = exchange_info.get("status")
-    valid = status is not None and status in ["Trading", "Settling"]
+    status = exchange_info.get("suspended")
+    valid = status is not None and status is False 
     return valid
 
 

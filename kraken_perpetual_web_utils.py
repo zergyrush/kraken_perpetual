@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
 from hummingbot.connector.derivative.kraken_perpetual import (
@@ -68,7 +69,8 @@ async def get_current_server_time(
         throttler_limit_id=limit_id,
         method=RESTMethod.GET,
     )
-    server_time = float(response["time_now"])
+    dt = datetime.strptime(response["serverTime"], CONSTANTS.SERVER_TIME_FORMAT)
+    server_time = dt.replace(tzinfo=timezone.utc).timestamp()
 
     return server_time
 

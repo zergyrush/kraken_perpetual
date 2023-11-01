@@ -722,10 +722,9 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
 
     def _initialize_trading_pair_symbols_from_exchange_info(self, exchange_info: Dict[str, Any]):
         mapping = bidict()
-        for symbol_data in filter(kraken_utils.is_exchange_information_valid, exchange_info["result"]):
-            exchange_symbol = symbol_data["name"]
-            base = symbol_data["base_currency"]
-            quote = symbol_data["quote_currency"]
+        for symbol_data in filter(kraken_utils.is_exchange_information_valid, exchange_info["tickers"]):
+            exchange_symbol = symbol_data["symbol"]
+            (base, quote) = symbol_data["pair"].split(":")
             trading_pair = combine_to_hb_trading_pair(base, quote)
             if trading_pair in mapping.inverse:
                 self._resolve_trading_pair_symbols_duplicate(mapping, exchange_symbol, base, quote)

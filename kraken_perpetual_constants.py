@@ -1,4 +1,5 @@
 from hummingbot.core.data_type.common import OrderType, PositionMode
+
 from hummingbot.core.data_type.in_flight_order import OrderState
 
 EXCHANGE_NAME = "kraken_perpetual"
@@ -6,10 +7,11 @@ EXCHANGE_NAME = "kraken_perpetual"
 DEFAULT_DOMAIN = "kraken_perpetual_main"
 
 DEFAULT_TIME_IN_FORCE = "GoodTillCancel"
+SERVER_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 REST_URLS = {
-    "kraken_perpetual_main": "https://futures.kraken.com/derivatives/api/v3/",
-    "kraken_perpetual_testnet": "https://demo-futures.kraken.com/derivatives/api/v3/",
+    "kraken_perpetual_main": "https://futures.kraken.com/derivatives/api/",
+    "kraken_perpetual_testnet": "https://demo-futures.kraken.com/derivatives/api/",
 }
 
 REST_LINEAR_URLS = {
@@ -29,7 +31,7 @@ WSS_LINEAR_PUBLIC_URLS = {
 }
 WSS_LINEAR_PRIVATE_URLS = WSS_LINEAR_PUBLIC_URLS
 
-REST_API_VERSION = "v2"
+REST_API_VERSION = "v3"
 
 HBOT_BROKER_ID = "Hummingbot"
 
@@ -56,20 +58,23 @@ LINEAR_MARKET = "linear"
 NON_LINEAR_MARKET = "non_linear"
 
 LATEST_SYMBOL_INFORMATION_ENDPOINT = {
-    LINEAR_MARKET: f"{REST_API_VERSION}/public/tickers",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/tickers",
+    LINEAR_MARKET: f"{REST_API_VERSION}/tickers",
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/tickers",
 }
 QUERY_SYMBOL_ENDPOINT = {
-    LINEAR_MARKET: f"{REST_API_VERSION}/public/symbols",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/symbols",
+    LINEAR_MARKET: f"{REST_API_VERSION}/tickers",
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/tickers",
 }
 ORDER_BOOK_ENDPOINT = {
     LINEAR_MARKET: f"{REST_API_VERSION}/public/orderBook/L2",
     NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/orderBook/L2",
 }
+
+# FIXME: Before finding the dedicated server_time API just use tickers
+# You can also get "serverTime" from /tickers
 SERVER_TIME_PATH_URL = {
-    LINEAR_MARKET: f"{REST_API_VERSION}/public/time",
-    NON_LINEAR_MARKET: f"{REST_API_VERSION}/public/time",
+    LINEAR_MARKET: f"{REST_API_VERSION}/tickers",
+    NON_LINEAR_MARKET: f"{REST_API_VERSION}/tickers",
 }
 
 # REST API Private Endpoints
