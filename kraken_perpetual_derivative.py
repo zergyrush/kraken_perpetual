@@ -393,9 +393,11 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
             is_auth_required=True,
         )
 
-        if wallet_balance["ret_code"] != CONSTANTS.RET_CODE_OK:
-            formatted_ret_code = self._format_ret_code_for_print(wallet_balance["ret_code"])
-            raise IOError(f"{formatted_ret_code} - {wallet_balance['ret_msg']}")
+        self.logger().error(f"wallet_balance:{wallet_balance}")
+
+        if wallet_balance["result"] == CONSTANTS.RET_RESULT_ERROR_STATUS:
+            formatted_errors = self._format_errors_for_print(wallet_balance["errors"])
+            raise IOError(f"errors - {formatted_errors}")
 
         self._account_available_balances.clear()
         self._account_balances.clear()
@@ -881,3 +883,9 @@ class KrakenPerpetualDerivative(PerpetualDerivativePyBase):
     @staticmethod
     def _format_ret_code_for_print(ret_code: Union[str, int]) -> str:
         return f"ret_code <{ret_code}>"
+
+    @staticmethod
+    def _format_errors_for_print(errors: List[str]) -> str:
+        # https://docs.futures.kraken.com/#http-api-trading-v3-api-account-information-get-wallets-schemas-errorresponse
+        return f"ERRORS <{errors}>"
+

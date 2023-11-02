@@ -94,9 +94,12 @@ class KrakenPerpetualAuth(AuthBase):
             nonce=nonce,
         )
 
+        print("DEBUG:")
+        print("Signature: {}".format(signature))
+
         authentHeaders = {
             "APIKey": self._api_key,
-            "Authent": signature,
+            "Authent": signature.decode("utf8"),
         }
 
         if self.useNonce:
@@ -129,7 +132,7 @@ class KrakenPerpetualAuth(AuthBase):
         hmac_digest = hmac.new(secretDecoded, hash_digest, hashlib.sha512).digest()
 
         # step 5: base64 encode the result of step 4 and return
-        return base64.b64decode(hmac_digest)
+        return base64.b64encode(hmac_digest)
 
     def _get_nonce(self):
         self.nonce = (self.nonce + 1) & 8191
